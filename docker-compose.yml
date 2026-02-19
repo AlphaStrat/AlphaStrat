@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════════
+# AlphaStrat — Docker Compose (Local Development)
+# ═══════════════════════════════════════════════════════════════
+# Usage: docker-compose up --build
+#
+# Services:
+#   - backend:      Trading Engine API (port 8020)
+#   - frontend-api: Strategy Builder API (port 8010)
+#   - frontend-ui:  React dev server (port 5173)
+# ═══════════════════════════════════════════════════════════════
+
+version: "3.8"
+
+services:
+  # ─── Backend Trading Engine API ────────────────────────────────
+  backend:
+    build:
+      context: ./backend/algo/trading-pipeline
+      dockerfile: Dockerfile.api
+    ports:
+      - "8020:8020"
+    environment:
+      - PORT=8020
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend/algo/trading-pipeline/src:/app/src
+      - ./backend/algo/trading-pipeline/configs:/app/configs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8020/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Frontend Strategy Builder API ─────────────────────────────
+  frontend-api:
+    build:
+      context: ./frontend/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./frontend/backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Frontend UI (React + Vite) ────────────────────────────────
+  frontend-ui:
+    build:
+      context: ./frontend/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/frontend/src:/app/src
+    depends_on:
+      - backend
+      - frontend-api
+    environment:
+      - VITE_BACKEND_URL=http://backend:8020
+      - VITE_FRONTEND_API_URL=http://frontend-api:8010

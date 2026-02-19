@@ -1,0 +1,6 @@
+[submodule "server-local"]
+	path = server-local
+	url = https://github.com/AlphaStrat/ibkr_trading_system.git
+[submodule "app"]
+	path = app
+	url = https://github.com/AlphaStrat/trading-strategy-builder.git
