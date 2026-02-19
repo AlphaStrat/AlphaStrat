@@ -15,7 +15,7 @@ services:
   # ─── Backend Trading Engine API ────────────────────────────────
   backend:
     build:
-      context: ./backend/algo/trading-pipeline
+      context: ./server-local/algo/trading-pipeline
       dockerfile: Dockerfile.api
     ports:
       - "8020:8020"
@@ -23,8 +23,8 @@ services:
       - PORT=8020
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./backend/algo/trading-pipeline/src:/app/src
-      - ./backend/algo/trading-pipeline/configs:/app/configs
+      - ./server-local/algo/trading-pipeline/src:/app/src
+      - ./server-local/algo/trading-pipeline/configs:/app/configs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8020/api/health"]
       interval: 30s
@@ -34,14 +34,14 @@ services:
   # ─── Frontend Strategy Builder API ─────────────────────────────
   frontend-api:
     build:
-      context: ./frontend/backend
+      context: ./app/backend
       dockerfile: Dockerfile
     ports:
       - "8010:8010"
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./frontend/backend:/app
+      - ./app/backend:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8010/"]
       interval: 30s
@@ -51,12 +51,12 @@ services:
   # ─── Frontend UI (React + Vite) ────────────────────────────────
   frontend-ui:
     build:
-      context: ./frontend/frontend
+      context: ./app/frontend
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend/frontend/src:/app/src
+      - ./app/frontend/src:/app/src
     depends_on:
       - backend
       - frontend-api
